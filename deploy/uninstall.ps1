@@ -32,7 +32,11 @@ if (Test-Path $ClaudeConfigPath) {
     if ($json.PSObject.Properties['mcpServers'] -and
         $json.mcpServers.PSObject.Properties['connectwise']) {
         $json.mcpServers.PSObject.Properties.Remove('connectwise')
-        $json | ConvertTo-Json -Depth 10 | Set-Content $ClaudeConfigPath -Encoding UTF8
+        [System.IO.File]::WriteAllText(
+            $ClaudeConfigPath,
+            ($json | ConvertTo-Json -Depth 10),
+            [System.Text.UTF8Encoding]::new($false)
+        )
         Write-Host "  Removed 'connectwise' from claude_desktop_config.json" -ForegroundColor Green
     } else {
         Write-Host "  No 'connectwise' entry in claude_desktop_config.json — skipping" -ForegroundColor Yellow

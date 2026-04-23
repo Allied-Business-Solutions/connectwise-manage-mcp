@@ -26,7 +26,7 @@ function Get-NodeMajorVersion {
         if ($LASTEXITCODE -eq 0 -and $output -match 'v(\d+)\.') {
             return [int]$Matches[1]
         }
-    } catch { }
+    } catch { Write-Verbose "node --version check failed: $_" }
     return 0
 }
 
@@ -57,14 +57,17 @@ function Get-LatestAssetUrl {
 
 function Install-ReleaseFiles {
     param([string]$DownloadUrl)
-    $zipPath = Join-Path $env:TEMP 'connectwise-mcp-latest.zip'
+    $zipPath    = Join-Path $env:TEMP 'connectwise-mcp-latest.zip'
+    $stagingDir = "$InstallDir-staging"
     Write-Host "  Downloading release..." -ForegroundColor Yellow
     Invoke-WebRequest -Uri $DownloadUrl -OutFile $zipPath -UseBasicParsing
     Write-Host "  Extracting to $InstallDir..." -ForegroundColor Yellow
+    if (Test-Path $stagingDir) { Remove-Item $stagingDir -Recurse -Force }
+    New-Item -ItemType Directory -Path $stagingDir -Force | Out-Null
+    Expand-Archive -Path $zipPath -DestinationPath $stagingDir -Force
+    Remove-Item $zipPath -ErrorAction SilentlyContinue
     if (Test-Path $InstallDir) { Remove-Item $InstallDir -Recurse -Force }
-    New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-    Expand-Archive -Path $zipPath -DestinationPath $InstallDir -Force
-    Remove-Item $zipPath
+    Rename-Item $stagingDir $InstallDir
 }
 
 function Read-NonEmptyString {
@@ -97,7 +100,11 @@ function Merge-ClaudeConfig {
         $json | Add-Member -MemberType NoteProperty -Name 'mcpServers' -Value ([PSCustomObject]@{})
     }
     $json.mcpServers | Add-Member -MemberType NoteProperty -Name 'connectwise' -Value $McpEntry -Force
-    $json | ConvertTo-Json -Depth 10 | Set-Content $ConfigPath -Encoding UTF8
+    [System.IO.File]::WriteAllText(
+        $ConfigPath,
+        ($json | ConvertTo-Json -Depth 10),
+        [System.Text.UTF8Encoding]::new($false)
+    )
 }
 
 # ── Main ──────────────────────────────────────────────────────────────────────

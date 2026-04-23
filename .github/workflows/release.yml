@@ -7,7 +7,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     defaults:
       run:
         working-directory: ConnectWise-Manage
@@ -29,13 +29,13 @@ jobs:
         run: npm run build
 
       - name: Create release artifact
+        shell: pwsh
         run: |
-          mkdir -p release-artifact
-          cp -r dist release-artifact/
-          cp -r node_modules release-artifact/
-          cp package.json release-artifact/
-          cd release-artifact
-          zip -r ../connectwise-mcp-${{ github.ref_name }}.zip .
+          New-Item -ItemType Directory -Path release-artifact -Force | Out-Null
+          Copy-Item -Recurse dist release-artifact\
+          Copy-Item -Recurse node_modules release-artifact\
+          Copy-Item package.json release-artifact\
+          Compress-Archive -Path release-artifact\* -DestinationPath connectwise-mcp-${{ github.ref_name }}.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
