@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "connectwise": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\YOUR_USERNAME\\AppData\\Local\\Programs\\ConnectWiseMCP\\dist\\index.js"
+      ],
+      "env": {
+        "CWM_SITE": "your-cwm-instance.example.com",
+        "CWM_COMPANY_ID": "YourCompanyId",
+        "CWM_PUBLIC_KEY": "your_public_key_here",
+        "CWM_PRIVATE_KEY": "your_private_key_here",
+        "CWM_CLIENT_ID": "your-client-id-guid-here",
+        "CWM_ENABLE_RAW_TOOLS": "false",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
