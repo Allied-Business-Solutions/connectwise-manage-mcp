@@ -75,6 +75,34 @@ Add the following to `%APPDATA%\Claude\claude_desktop_config.json`:
 
 Replace `YOUR_USERNAME` with your Windows username. Restart Claude Desktop after saving.
 
+## Team Installation (One-Liner)
+
+Open PowerShell and run:
+
+```powershell
+irm https://raw.githubusercontent.com/Allied-Business-Solutions/allied-mcp-servers/main/ConnectWise-Manage/deploy/install.ps1 | iex
+```
+
+The installer will:
+1. Install Node.js 20 LTS via `winget` (skipped if already present)
+2. Download the latest release from GitHub
+3. Prompt for your individual CWM API credentials
+4. Write your `claude_desktop_config.json` automatically
+
+**Prerequisites:**
+- Windows 10 1709+ or Windows 11 (required for `winget`)
+- Claude Desktop installed
+- Your CWM API member credentials (see Prerequisites section above)
+
+**To upgrade:** re-run the same command.
+
+**To uninstall:**
+```powershell
+irm https://raw.githubusercontent.com/Allied-Business-Solutions/allied-mcp-servers/main/ConnectWise-Manage/deploy/uninstall.ps1 | iex
+```
+
+**Ninja RMM:** Push `winget install OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements` as a prerequisite policy. Technicians then run the installer above for their own credentials.
+
 ## Environment Variables
 
 | Variable | Required | Description |
