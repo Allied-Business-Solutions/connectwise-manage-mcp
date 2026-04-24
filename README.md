@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that exposes the ConnectWise Manage PSA R
 
 ## Features
 
-- **79 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
+- **82 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
 - **4 raw escape-hatch tools** (opt-in via `CWM_ENABLE_RAW_TOOLS=true`) for power users
 - Production-grade auth with correct Basic + clientId header construction
 - JSON Patch (RFC 6902) for all updates — never accidentally blanks fields
@@ -105,6 +105,19 @@ Open `%APPDATA%\Claude\claude_desktop_config.json` and add the following (create
 
 Replace `YOUR_USERNAME` and fill in your credentials from the Prerequisites section above. Restart Claude Desktop after saving.
 
+### Updating (Manual Install)
+
+To pull the latest version:
+
+```cmd
+cd %LOCALAPPDATA%\Programs\ConnectWiseMCP
+git pull
+npm install
+npm run build
+```
+
+Then restart Claude Desktop.
+
 ## Team Installation (One-Liner)
 
 Open PowerShell and run:
@@ -139,8 +152,8 @@ irm https://raw.githubusercontent.com/Allied-Business-Solutions/connectwise-mana
 |---|---|---|
 | `CWM_SITE` | Yes | CWM hostname, e.g. `your-cwm-instance.example.com` (no https://) |
 | `CWM_COMPANY_ID` | Yes | Login company ID (not a numeric ID) |
-| `CWM_PUBLIC_KEY` | Yes | API member public key from System > Members > API Keys |
-| `CWM_PRIVATE_KEY` | Yes | API member private key |
+| `CWM_PUBLIC_KEY` | Yes | Your API public key (from My Account > API Keys in CWM) |
+| `CWM_PRIVATE_KEY` | Yes | Your API private key (only shown once at generation time) |
 | `CWM_CLIENT_ID` | Yes | Developer app GUID from developer.connectwise.com |
 | `CWM_ENABLE_RAW_TOOLS` | No | Set `true` to enable raw escape-hatch tools (default: `false`) |
 | `CWM_MAX_PAGES` | No | Max pages for paginateAll (default: `20`) |
@@ -200,7 +213,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 
 ## Tool Index
 
-### Service Desk — Tickets (20 tools)
+### Service Desk — Tickets (21 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_tickets` | List tickets with full filter/pagination support |
@@ -245,7 +258,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_project_team_members` | List project team members |
 | `cw_list_project_documents` | List documents/attachments on a project |
 
-### Time & Schedule (8 tools)
+### Time & Schedule (9 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_time_entries` | List time entries with filters |
@@ -258,7 +271,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_members` | List active CWM members |
 | `cw_get_member` | Get a member by ID |
 
-### Companies (6 tools)
+### Companies (7 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_companies` | List companies |
@@ -316,7 +329,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_priorities` | List ticket priorities |
 | `cw_list_locations` | List system locations |
 | `cw_list_departments` | List departments |
-| `cw_download_document` | Download any document by ID and return as base64 (works across all record types) |
+| `cw_download_document` | Download any document by ID — extracts text from PDFs, returns base64 for other types |
 
 ### Raw Escape Hatches (4 tools, opt-in)
 | Tool | Description |
