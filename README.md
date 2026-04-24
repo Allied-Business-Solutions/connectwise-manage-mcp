@@ -14,46 +14,94 @@ An MCP (Model Context Protocol) server that exposes the ConnectWise Manage PSA R
 ## Prerequisites
 
 - Node.js 20 LTS or newer
-- A ConnectWise Manage API member with the following roles/permissions:
-  - **Service**: View, Add, Edit (tickets, notes, tasks)
-  - **Project**: View, Add, Edit
-  - **Time**: View, Add, Edit, Delete (time entries)
-  - **Company**: View, Edit (companies, contacts, configurations)
-  - **Finance**: View, Edit (agreements, invoices — read-only on invoices)
-  - **Sales**: View, Edit (opportunities)
-  - **System**: View (members, locations, departments)
+- A ConnectWise Manage API member with API keys generated (see below)
 - A registered developer Client ID from [developer.connectwise.com](https://developer.connectwise.com)
 
-## Installation (Windows)
+### Generating Your CWM API Credentials
+
+You need three things from ConnectWise Manage: a **Public Key**, a **Private Key**, and your **Company ID**.
+
+**Step 1 — Find your Company ID**
+
+Your Company ID is the login company name you type on the CWM login screen (e.g. `MyCompany`). It is **not** a number.
+
+**Step 2 — Create an API Member**
+
+> Skip this step if an API member already exists for you.
+
+1. Go to **System > Members**
+2. Click **New Member**
+3. Set **Member Type** to `API`
+4. Fill in Name and set a Member ID (e.g. `claude-api`)
+5. Assign a **Role** with the following permissions:
+   - **Service**: View, Add, Edit
+   - **Project**: View, Add, Edit
+   - **Time**: View, Add, Edit, Delete
+   - **Company**: View, Edit
+   - **Finance**: View, Edit
+   - **Sales**: View, Edit
+   - **System**: View
+6. Save the member
+
+**Step 3 — Generate API Keys**
+
+1. Open the API member record (System > Members > your API member)
+2. Click the **API Keys** tab
+3. Click **New API Key**
+4. Give it a description (e.g. `Claude Desktop`)
+5. Click **Save** — the **Private Key is only shown once**, copy it immediately
+6. Copy the **Public Key** as well
+
+**Step 4 — Get a Client ID**
+
+1. Go to [developer.connectwise.com](https://developer.connectwise.com) and sign in
+2. Register a new app (name it anything, e.g. `Claude MCP`)
+3. Copy the **Client ID** (a GUID)
+
+## Installation (Windows — Manual)
+
+> **Recommended for most users:** Use the [Team Installation one-liner](#team-installation-one-liner) below instead. Manual installation is for developers or advanced users.
 
 ### 1. Install Node.js 20
 
-Download and install from [nodejs.org](https://nodejs.org/).
-
-### 2. Clone and build
+Download and install from [nodejs.org](https://nodejs.org/). Verify with:
 
 ```cmd
-git clone <repo-url> C:\Users\YOUR_USERNAME\AppData\Local\Programs\ConnectWiseMCP
+node --version
+```
+
+You should see `v20.x.x` or higher.
+
+### 2. Clone the repo
+
+```cmd
+git clone https://github.com/Allied-Business-Solutions/connectwise-manage-mcp.git C:\Users\YOUR_USERNAME\AppData\Local\Programs\ConnectWiseMCP
 cd C:\Users\YOUR_USERNAME\AppData\Local\Programs\ConnectWiseMCP
+```
+
+Replace `YOUR_USERNAME` with your Windows username.
+
+### 3. Install dependencies
+
+> **Required — do not skip.** This downloads all packages the server needs to run.
+
+```cmd
 npm install
+```
+
+### 4. Build the server
+
+> **Required — do not skip.** This compiles TypeScript to JavaScript. The server will not start without this step.
+
+```cmd
 npm run build
 ```
 
-### 3. Create your `.env` file
+You should see no errors. A `dist\` folder will be created.
 
-Copy `.env.example` to `.env` in the same directory and fill in your values:
+### 5. Configure Claude Desktop
 
-```
-CWM_SITE=your-cwm-instance.example.com
-CWM_COMPANY_ID=YourCompanyId
-CWM_PUBLIC_KEY=your_public_key
-CWM_PRIVATE_KEY=your_private_key
-CWM_CLIENT_ID=your-client-id-guid
-```
-
-### 4. Configure Claude Desktop
-
-Add the following to `%APPDATA%\Claude\claude_desktop_config.json`:
+Open `%APPDATA%\Claude\claude_desktop_config.json` and add the following (create the file if it doesn't exist):
 
 ```json
 {
@@ -73,7 +121,7 @@ Add the following to `%APPDATA%\Claude\claude_desktop_config.json`:
 }
 ```
 
-Replace `YOUR_USERNAME` with your Windows username. Restart Claude Desktop after saving.
+Replace `YOUR_USERNAME` and fill in your credentials from the Prerequisites section above. Restart Claude Desktop after saving.
 
 ## Team Installation (One-Liner)
 
