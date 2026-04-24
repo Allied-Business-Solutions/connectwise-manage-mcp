@@ -38,9 +38,7 @@ Your Company ID is the login company name you type on the CWM login screen (e.g.
 
 **Step 3 — Get a Client ID**
 
-1. Go to [developer.connectwise.com](https://developer.connectwise.com) and sign in
-2. Register a new app (name it anything, e.g. `Claude MCP`)
-3. Copy the **Client ID** (a GUID)
+Contact your ConnectWise administrator for the Client ID (a GUID). They manage the registered developer app at [developer.connectwise.com](https://developer.connectwise.com).
 
 ## Installation (Windows — Manual)
 
