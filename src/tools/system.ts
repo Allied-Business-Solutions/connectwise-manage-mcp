@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { cwmGet } from '../client/cwmClient.js';
+import { cwmGet, cwmGetBinary } from '../client/cwmClient.js';
 import { success } from '../schemas/common.js';
 import { runTool } from '../utils/toolRunner.js';
 
@@ -127,6 +127,39 @@ Example: {}`,
           fields: 'id,name',
         });
         return success(response.data, { page, pageSize, count: response.data.length });
+      })
+  );
+
+  // ─── cw_download_document ──────────────────────────────────────────────────
+  server.tool(
+    'cw_download_document',
+    `Download a document/attachment by ID and return its contents as base64.
+Calls GET /system/documents/{id}/download.
+Works for documents on any record type: tickets, projects, opportunities, companies, agreements, etc.
+Use cw_list_ticket_documents, cw_list_project_documents, etc. to find document IDs first.
+Returns: { fileName, contentType, sizeBytes, content (base64) }
+Example: id=8821`,
+    {
+      id: z.number().int().positive().describe('Document ID from a cw_list_*_documents call'),
+    },
+    async ({ id }) =>
+      runTool('cw_download_document', async () => {
+        const response = await cwmGetBinary(`/system/documents/${id}/download`);
+        const buffer = Buffer.from(response.data);
+
+        // Extract filename from Content-Disposition header if present
+        const disposition = response.headers['content-disposition'] as string | undefined;
+        const fileNameMatch = disposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
+        const fileName = fileNameMatch?.[1] ? decodeURIComponent(fileNameMatch[1].replace(/"/g, '')) : `document-${id}`;
+
+        const contentType = (response.headers['content-type'] as string | undefined) ?? 'application/octet-stream';
+
+        return success({
+          fileName,
+          contentType,
+          sizeBytes: buffer.length,
+          content: buffer.toString('base64'),
+        });
       })
   );
 }

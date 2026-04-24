@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that exposes the ConnectWise Manage PSA R
 
 ## Features
 
-- **78 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
+- **79 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
 - **4 raw escape-hatch tools** (opt-in via `CWM_ENABLE_RAW_TOOLS=true`) for power users
 - Production-grade auth with correct Basic + clientId header construction
 - JSON Patch (RFC 6902) for all updates — never accidentally blanks fields
@@ -307,7 +307,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_opportunity_documents` | List documents/attachments on an opportunity |
 | `cw_list_quote_documents` | List documents/attachments on a sales quote |
 
-### System / Reference (6 tools)
+### System / Reference (7 tools)
 | Tool | Description |
 |---|---|
 | `cw_ping` | Health check — verify connectivity and auth |
@@ -316,6 +316,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_priorities` | List ticket priorities |
 | `cw_list_locations` | List system locations |
 | `cw_list_departments` | List departments |
+| `cw_download_document` | Download any document by ID and return as base64 (works across all record types) |
 
 ### Raw Escape Hatches (4 tools, opt-in)
 | Tool | Description |

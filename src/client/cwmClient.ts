@@ -111,4 +111,8 @@ export async function cwmDelete(path: string): Promise<AxiosResponse<void>> {
   return getClient().delete(path);
 }
 
+export async function cwmGetBinary(path: string, params?: QueryParams): Promise<AxiosResponse<Buffer>> {
+  return getClient().get<Buffer>(path, { params, responseType: 'arraybuffer' });
+}
+
 export { CwmApiError };
