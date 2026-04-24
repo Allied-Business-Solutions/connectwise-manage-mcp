@@ -25,34 +25,18 @@ You need three things from ConnectWise Manage: a **Public Key**, a **Private Key
 
 Your Company ID is the login company name you type on the CWM login screen (e.g. `MyCompany`). It is **not** a number.
 
-**Step 2 — Create an API Member**
+**Step 2 — Generate Your API Keys**
 
-> Skip this step if an API member already exists for you.
+1. Log into ConnectWise Manage
+2. Click your profile icon in the **top-right corner**
+3. Click **My Account**
+4. Switch to the **API Keys** tab
+5. Click **New API Key**
+6. Enter a description (e.g. `Claude Desktop`) and click **Save**
+7. **Copy the Private Key immediately** — it is only displayed once and cannot be retrieved again
+8. Copy the **Public Key** as well
 
-1. Go to **System > Members**
-2. Click **New Member**
-3. Set **Member Type** to `API`
-4. Fill in Name and set a Member ID (e.g. `claude-api`)
-5. Assign a **Role** with the following permissions:
-   - **Service**: View, Add, Edit
-   - **Project**: View, Add, Edit
-   - **Time**: View, Add, Edit, Delete
-   - **Company**: View, Edit
-   - **Finance**: View, Edit
-   - **Sales**: View, Edit
-   - **System**: View
-6. Save the member
-
-**Step 3 — Generate API Keys**
-
-1. Open the API member record (System > Members > your API member)
-2. Click the **API Keys** tab
-3. Click **New API Key**
-4. Give it a description (e.g. `Claude Desktop`)
-5. Click **Save** — the **Private Key is only shown once**, copy it immediately
-6. Copy the **Public Key** as well
-
-**Step 4 — Get a Client ID**
+**Step 3 — Get a Client ID**
 
 1. Go to [developer.connectwise.com](https://developer.connectwise.com) and sign in
 2. Register a new app (name it anything, e.g. `Claude MCP`)
