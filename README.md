@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that exposes the ConnectWise Manage PSA R
 
 ## Features
 
-- **75 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
+- **78 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
 - **4 raw escape-hatch tools** (opt-in via `CWM_ENABLE_RAW_TOOLS=true`) for power users
 - Production-grade auth with correct Basic + clientId header construction
 - JSON Patch (RFC 6902) for all updates — never accidentally blanks fields
@@ -225,7 +225,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_board_statuses` | List valid statuses for a board |
 | `cw_list_board_types` | List ticket types for a board |
 
-### Projects (15 tools)
+### Projects (16 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_projects` | List projects with filtering |
@@ -243,6 +243,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_add_project_note` | Add a note to a project |
 | `cw_list_project_contacts` | List project contacts |
 | `cw_list_project_team_members` | List project team members |
+| `cw_list_project_documents` | List documents/attachments on a project |
 
 ### Time & Schedule (8 tools)
 | Tool | Description |
@@ -296,13 +297,15 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_update_configuration` | Update a configuration |
 | `cw_list_configuration_types` | List configuration types |
 
-### Opportunities (4 tools)
+### Opportunities (6 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_opportunities` | List sales opportunities |
 | `cw_get_opportunity` | Get an opportunity by ID |
 | `cw_list_opportunity_notes` | List opportunity notes |
 | `cw_update_opportunity` | Update an opportunity |
+| `cw_list_opportunity_documents` | List documents/attachments on an opportunity |
+| `cw_list_quote_documents` | List documents/attachments on a sales quote |
 
 ### System / Reference (6 tools)
 | Tool | Description |
