@@ -8,9 +8,8 @@ on:
 jobs:
   release:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: ConnectWise-Manage
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
@@ -41,9 +40,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            ConnectWise-Manage/connectwise-mcp-${{ github.ref_name }}.zip
-            ConnectWise-Manage/deploy/install.ps1
-            ConnectWise-Manage/deploy/uninstall.ps1
+            connectwise-mcp-${{ github.ref_name }}.zip
+            deploy/install.ps1
+            deploy/uninstall.ps1
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

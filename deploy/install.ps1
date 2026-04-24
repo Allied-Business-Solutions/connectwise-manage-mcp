@@ -15,7 +15,7 @@ $ErrorActionPreference = 'Stop'
 $InstallDir       = Join-Path $env:LOCALAPPDATA 'Programs\ConnectWiseMCP'
 $ClaudeConfigPath = Join-Path $env:APPDATA 'Claude\claude_desktop_config.json'
 $RepoOwner        = 'Allied-Business-Solutions'
-$RepoName         = 'allied-mcp-servers'
+$RepoName         = 'connectwise-manage-mcp'
 $AssetPattern     = 'connectwise-mcp-*.zip'
 
 # ── Functions ─────────────────────────────────────────────────────────────────

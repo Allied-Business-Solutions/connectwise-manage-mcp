@@ -80,7 +80,7 @@ Replace `YOUR_USERNAME` with your Windows username. Restart Claude Desktop after
 Open PowerShell and run:
 
 ```powershell
-irm https://raw.githubusercontent.com/Allied-Business-Solutions/allied-mcp-servers/main/ConnectWise-Manage/deploy/install.ps1 | iex
+irm https://raw.githubusercontent.com/Allied-Business-Solutions/connectwise-manage-mcp/main/deploy/install.ps1 | iex
 ```
 
 The installer will:
@@ -98,7 +98,7 @@ The installer will:
 
 **To uninstall:**
 ```powershell
-irm https://raw.githubusercontent.com/Allied-Business-Solutions/allied-mcp-servers/main/ConnectWise-Manage/deploy/uninstall.ps1 | iex
+irm https://raw.githubusercontent.com/Allied-Business-Solutions/connectwise-manage-mcp/main/deploy/uninstall.ps1 | iex
 ```
 
 **Ninja RMM:** Push `winget install OpenJS.NodeJS.LTS --silent --accept-package-agreements --accept-source-agreements` as a prerequisite policy. Technicians then run the installer above for their own credentials.
