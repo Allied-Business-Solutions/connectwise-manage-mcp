@@ -1,5 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse') as (buffer: Buffer) => Promise<{ numpages: number; text: string }>;
 import { cwmGet, cwmGetBinary } from '../client/cwmClient.js';
 import { success } from '../schemas/common.js';
 import { runTool } from '../utils/toolRunner.js';
@@ -133,11 +136,12 @@ Example: {}`,
   // ─── cw_download_document ──────────────────────────────────────────────────
   server.tool(
     'cw_download_document',
-    `Download a document/attachment by ID and return its contents as base64.
+    `Download a document/attachment by ID and return its contents.
 Calls GET /system/documents/{id}/download.
 Works for documents on any record type: tickets, projects, opportunities, companies, agreements, etc.
 Use cw_list_ticket_documents, cw_list_project_documents, etc. to find document IDs first.
-Returns: { fileName, contentType, sizeBytes, content (base64) }
+PDFs: returns extracted text so Claude can read the content directly.
+Other files: returns base64-encoded content.
 Example: id=8821`,
     {
       id: z.number().int().positive().describe('Document ID from a cw_list_*_documents call'),
@@ -147,13 +151,23 @@ Example: id=8821`,
         const response = await cwmGetBinary(`/system/documents/${id}/download`);
         const buffer = Buffer.from(response.data);
 
-        // Extract filename from Content-Disposition header if present
         const disposition = response.headers['content-disposition'] as string | undefined;
         const fileNameMatch = disposition?.match(/filename\*?=(?:UTF-8''|")?([^";]+)/i);
         const fileName = fileNameMatch?.[1] ? decodeURIComponent(fileNameMatch[1].replace(/"/g, '')) : `document-${id}`;
-
         const contentType = (response.headers['content-type'] as string | undefined) ?? 'application/octet-stream';
 
+        if (contentType.includes('pdf') || fileName.toLowerCase().endsWith('.pdf')) {
+          const parsed = await pdfParse(buffer);
+          return success({
+            fileName,
+            contentType,
+            sizeBytes: buffer.length,
+            pageCount: parsed.numpages,
+            text: parsed.text,
+          });
+        }
+
+        // Non-PDF: return raw content as base64
         return success({
           fileName,
           contentType,
