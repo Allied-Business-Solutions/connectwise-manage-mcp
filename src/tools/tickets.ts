@@ -494,4 +494,73 @@ Example: { boardId: 1 }`,
         return success(response.data, { page, pageSize, count: response.data.length });
       })
   );
+
+  // ─── cw_delete_ticket ──────────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_ticket',
+    `Delete a service ticket permanently.
+Calls DELETE /service/tickets/{id}.
+Example: id=12345`,
+    {
+      id: z.number().int().positive().describe('Ticket ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_ticket', async () => {
+        await cwmDelete(`/service/tickets/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
+
+  // ─── cw_update_ticket_note ─────────────────────────────────────────────────
+  server.tool(
+    'cw_update_ticket_note',
+    `Update a note on a service ticket using JSON Patch.
+Calls PATCH /service/tickets/{parentId}/notes/{id}.
+Example: { ticketId: 123, noteId: 5, changes: { text: "Updated note text" } }`,
+    {
+      ticketId: z.number().int().positive().describe('Ticket ID'),
+      noteId: z.number().int().positive().describe('Note ID'),
+      changes: z.record(z.unknown()).describe('Fields to update'),
+    },
+    async ({ ticketId, noteId, changes }) =>
+      runTool('cw_update_ticket_note', async () => {
+        const patch = flatToJsonPatch(changes);
+        const response = await cwmPatch<unknown>(`/service/tickets/${ticketId}/notes/${noteId}`, patch);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_ticket_note ─────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_ticket_note',
+    `Delete a note from a service ticket permanently.
+Calls DELETE /service/tickets/{parentId}/notes/{id}.
+Example: { ticketId: 123, noteId: 5 }`,
+    {
+      ticketId: z.number().int().positive().describe('Ticket ID'),
+      noteId: z.number().int().positive().describe('Note ID'),
+    },
+    async ({ ticketId, noteId }) =>
+      runTool('cw_delete_ticket_note', async () => {
+        await cwmDelete(`/service/tickets/${ticketId}/notes/${noteId}`);
+        return success({ deleted: true, ticketId, noteId });
+      })
+  );
+
+  // ─── cw_delete_ticket_task ─────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_ticket_task',
+    `Delete a task from a service ticket permanently.
+Calls DELETE /service/tickets/{parentId}/tasks/{id}.
+Example: { ticketId: 123, taskId: 5 }`,
+    {
+      ticketId: z.number().int().positive().describe('Ticket ID'),
+      taskId: z.number().int().positive().describe('Task ID'),
+    },
+    async ({ ticketId, taskId }) =>
+      runTool('cw_delete_ticket_task', async () => {
+        await cwmDelete(`/service/tickets/${ticketId}/tasks/${taskId}`);
+        return success({ deleted: true, ticketId, taskId });
+      })
+  );
 }

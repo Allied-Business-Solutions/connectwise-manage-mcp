@@ -233,4 +233,54 @@ Example: id=10`,
         return success(response.data);
       })
   );
+
+  // ─── cw_get_schedule_entry ─────────────────────────────────────────────────
+  server.tool(
+    'cw_get_schedule_entry',
+    `Get full details of a single schedule entry by ID.
+Calls GET /schedule/entries/{id}.
+Example: id=500`,
+    {
+      id: z.number().int().positive().describe('Schedule entry ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_get_schedule_entry', async () => {
+        const response = await cwmGet<unknown>(`/schedule/entries/${id}`);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_update_schedule_entry ──────────────────────────────────────────────
+  server.tool(
+    'cw_update_schedule_entry',
+    `Update a schedule entry using JSON Patch.
+Calls PATCH /schedule/entries/{id}.
+Example: { id: 500, changes: { dateEnd: "2025-01-15T13:00:00Z", doneFlag: true } }`,
+    {
+      id: z.number().int().positive().describe('Schedule entry ID'),
+      changes: z.record(z.unknown()).describe('Fields to update'),
+    },
+    async ({ id, changes }) =>
+      runTool('cw_update_schedule_entry', async () => {
+        const patch = flatToJsonPatch(changes);
+        const response = await cwmPatch<unknown>(`/schedule/entries/${id}`, patch);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_schedule_entry ──────────────────────────────────────────────
+  server.tool(
+    'cw_delete_schedule_entry',
+    `Delete a schedule entry permanently.
+Calls DELETE /schedule/entries/{id}.
+Example: id=500`,
+    {
+      id: z.number().int().positive().describe('Schedule entry ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_schedule_entry', async () => {
+        await cwmDelete(`/schedule/entries/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
 }

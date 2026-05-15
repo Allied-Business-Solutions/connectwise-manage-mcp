@@ -134,4 +134,42 @@ Example: { id: 100, changes: { title: "Senior IT Manager" } }`,
         return success(response.data);
       })
   );
+
+  // ─── cw_list_contact_notes ─────────────────────────────────────────────────
+  server.tool(
+    'cw_list_contact_notes',
+    `List notes on a contact.
+Calls GET /company/contacts/{parentId}/notes.
+Example: contactId=100`,
+    {
+      contactId: z.number().int().positive().describe('Contact ID'),
+      page: z.number().int().positive().optional().default(1),
+      pageSize: z.number().int().min(1).max(1000).optional().default(50),
+    },
+    async ({ contactId, page, pageSize }) =>
+      runTool('cw_list_contact_notes', async () => {
+        const response = await cwmGet<unknown[]>(`/company/contacts/${contactId}/notes`, { page, pageSize });
+        return success(response.data, { page, pageSize, count: response.data.length });
+      })
+  );
+
+  // ─── cw_add_contact_note ───────────────────────────────────────────────────
+  server.tool(
+    'cw_add_contact_note',
+    `Add a note to a contact.
+Calls POST /company/contacts/{parentId}/notes.
+Example: { contactId: 100, text: "Spoke with Jane re: renewal" }`,
+    {
+      contactId: z.number().int().positive().describe('Contact ID'),
+      text: z.string().min(1).describe('Note text'),
+      type: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+      flagged: z.boolean().optional().default(false),
+    },
+    async (params) =>
+      runTool('cw_add_contact_note', async () => {
+        const { contactId, ...body } = params;
+        const response = await cwmPost<unknown>(`/company/contacts/${contactId}/notes`, body);
+        return success(response.data);
+      })
+  );
 }

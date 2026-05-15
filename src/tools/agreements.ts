@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { cwmGet, cwmPatch } from '../client/cwmClient.js';
+import { cwmGet, cwmPost, cwmPatch, cwmDelete } from '../client/cwmClient.js';
 import { flatToJsonPatch } from '../client/jsonPatch.js';
 import { buildConditions, eq, contains } from '../client/conditions.js';
 import { ListParamsSchema, success } from '../schemas/common.js';
@@ -155,6 +155,124 @@ Example: id=1234`,
       runTool('cw_get_invoice', async () => {
         const response = await cwmGet<unknown>(`/finance/invoices/${id}`);
         return success(response.data);
+      })
+  );
+
+  // ─── cw_create_agreement ───────────────────────────────────────────────────
+  server.tool(
+    'cw_create_agreement',
+    `Create a new agreement. Required: name, type, company, contact.
+Calls POST /finance/agreements.
+Example: { name: "AlliedSECURE - Acme Corp", type: { name: "AlliedSECURE" }, company: { id: 42 }, contact: { id: 100 } }`,
+    {
+      name: z.string().min(1).describe('Agreement name'),
+      type: z.object({ id: z.number().optional(), name: z.string().optional() }).describe('Agreement type reference'),
+      company: z.object({ id: z.number() }).describe('Company reference'),
+      contact: z.object({ id: z.number() }).describe('Contact reference'),
+      startDate: z.string().optional().describe('ISO 8601 date'),
+      endDate: z.string().optional().describe('ISO 8601 date'),
+      noEndingDateFlag: z.boolean().optional(),
+      opportunity: z.object({ id: z.number() }).optional(),
+      internalNotes: z.string().optional(),
+      location: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+      department: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+    },
+    async (params) =>
+      runTool('cw_create_agreement', async () => {
+        const response = await cwmPost<unknown>('/finance/agreements', params);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_update_agreement ───────────────────────────────────────────────────
+  server.tool(
+    'cw_update_agreement',
+    `Update an agreement using JSON Patch.
+Calls PATCH /finance/agreements/{id}.
+Example: { id: 55, changes: { cancelledFlag: true, dateCancelled: "2025-06-01" } }`,
+    {
+      id: z.number().int().positive().describe('Agreement ID'),
+      changes: z.record(z.unknown()).describe('Fields to update'),
+    },
+    async ({ id, changes }) =>
+      runTool('cw_update_agreement', async () => {
+        const patch = flatToJsonPatch(changes);
+        const response = await cwmPatch<unknown>(`/finance/agreements/${id}`, patch);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_agreement ───────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_agreement',
+    `Delete an agreement permanently.
+Calls DELETE /finance/agreements/{id}.
+Example: id=55`,
+    {
+      id: z.number().int().positive().describe('Agreement ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_agreement', async () => {
+        await cwmDelete(`/finance/agreements/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
+
+  // ─── cw_get_agreement_addition ─────────────────────────────────────────────
+  server.tool(
+    'cw_get_agreement_addition',
+    `Get a single agreement addition (line item) by ID.
+Calls GET /finance/agreements/{parentId}/additions/{id}.
+Example: { agreementId: 55, additionId: 10 }`,
+    {
+      agreementId: z.number().int().positive().describe('Agreement ID'),
+      additionId: z.number().int().positive().describe('Addition ID'),
+    },
+    async ({ agreementId, additionId }) =>
+      runTool('cw_get_agreement_addition', async () => {
+        const response = await cwmGet<unknown>(`/finance/agreements/${agreementId}/additions/${additionId}`);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_create_agreement_addition ─────────────────────────────────────────
+  server.tool(
+    'cw_create_agreement_addition',
+    `Add a product line item to an agreement. Required: product.
+Calls POST /finance/agreements/{parentId}/additions.
+Example: { agreementId: 55, product: { id: 12 }, quantity: 10, unitPrice: 49.99 }`,
+    {
+      agreementId: z.number().int().positive().describe('Agreement ID'),
+      product: z.object({ id: z.number().optional(), identifier: z.string().optional() }).describe('Product reference'),
+      quantity: z.number().optional(),
+      unitPrice: z.number().optional(),
+      billCustomer: z.enum(['Billable', 'DoNotBill', 'NoCharge']).optional(),
+      effectiveDate: z.string().optional().describe('ISO 8601 date'),
+      cancelledDate: z.string().optional().describe('ISO 8601 date'),
+      prorateCurrentPeriodFlag: z.boolean().optional(),
+    },
+    async (params) =>
+      runTool('cw_create_agreement_addition', async () => {
+        const { agreementId, ...body } = params;
+        const response = await cwmPost<unknown>(`/finance/agreements/${agreementId}/additions`, body);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_agreement_addition ─────────────────────────────────────────
+  server.tool(
+    'cw_delete_agreement_addition',
+    `Delete an addition (line item) from an agreement permanently.
+Calls DELETE /finance/agreements/{parentId}/additions/{id}.
+Example: { agreementId: 55, additionId: 10 }`,
+    {
+      agreementId: z.number().int().positive().describe('Agreement ID'),
+      additionId: z.number().int().positive().describe('Addition ID'),
+    },
+    async ({ agreementId, additionId }) =>
+      runTool('cw_delete_agreement_addition', async () => {
+        await cwmDelete(`/finance/agreements/${agreementId}/additions/${additionId}`);
+        return success({ deleted: true, agreementId, additionId });
       })
   );
 }

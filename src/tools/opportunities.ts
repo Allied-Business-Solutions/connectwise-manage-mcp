@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { cwmGet, cwmPatch } from '../client/cwmClient.js';
+import { cwmGet, cwmPost, cwmPatch, cwmDelete } from '../client/cwmClient.js';
 import { flatToJsonPatch } from '../client/jsonPatch.js';
 import { buildConditions, eq, contains } from '../client/conditions.js';
 import { ListParamsSchema, success } from '../schemas/common.js';
@@ -130,6 +130,86 @@ Example: id=55`,
       runTool('cw_list_quote_documents', async () => {
         const response = await cwmGet<unknown[]>('/system/documents', { recordType: 'SalesOrder', recordId: id, page, pageSize });
         return success(response.data, { page, pageSize, count: response.data.length });
+      })
+  );
+
+  // ─── cw_add_opportunity_note ───────────────────────────────────────────────
+  server.tool(
+    'cw_add_opportunity_note',
+    `Add a note to an opportunity.
+Calls POST /sales/opportunities/{parentId}/notes.
+Example: { opportunityId: 200, text: "Called prospect, demo scheduled for Friday" }`,
+    {
+      opportunityId: z.number().int().positive().describe('Opportunity ID'),
+      text: z.string().min(1).describe('Note text'),
+      type: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+      flagged: z.boolean().optional().default(false),
+    },
+    async (params) =>
+      runTool('cw_add_opportunity_note', async () => {
+        const { opportunityId, ...body } = params;
+        const response = await cwmPost<unknown>(`/sales/opportunities/${opportunityId}/notes`, body);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_opportunity ─────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_opportunity',
+    `Delete an opportunity permanently.
+Calls DELETE /sales/opportunities/{id}.
+Example: id=200`,
+    {
+      id: z.number().int().positive().describe('Opportunity ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_opportunity', async () => {
+        await cwmDelete(`/sales/opportunities/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
+
+  // ─── cw_convert_opportunity_to_project ─────────────────────────────────────
+  server.tool(
+    'cw_convert_opportunity_to_project',
+    `Convert an opportunity into a project. Returns the newly created project.
+Calls POST /sales/opportunities/{id}/convertToProject.
+Example: { id: 200, name: "Network Upgrade - Acme", board: { name: "Projects" }, estimatedStart: "2025-02-01", estimatedEnd: "2025-04-30" }`,
+    {
+      id: z.number().int().positive().describe('Opportunity ID'),
+      name: z.string().optional().describe('Project name (defaults to opportunity name)'),
+      board: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+      manager: z.object({ id: z.number().optional(), identifier: z.string().optional() }).optional(),
+      estimatedStart: z.string().optional().describe('ISO 8601 date'),
+      estimatedEnd: z.string().optional().describe('ISO 8601 date'),
+      includeAllNotesFlag: z.boolean().optional().default(false),
+    },
+    async (params) =>
+      runTool('cw_convert_opportunity_to_project', async () => {
+        const { id, ...body } = params;
+        const response = await cwmPost<unknown>(`/sales/opportunities/${id}/convertToProject`, body);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_convert_opportunity_to_ticket ──────────────────────────────────────
+  server.tool(
+    'cw_convert_opportunity_to_ticket',
+    `Convert an opportunity into a service ticket. Returns the newly created ticket.
+Calls POST /sales/opportunities/{id}/convertToServiceTicket.
+Example: { id: 200, summary: "Install new switches - Acme", includeAllNotesFlag: true }`,
+    {
+      id: z.number().int().positive().describe('Opportunity ID'),
+      summary: z.string().optional().describe('Ticket summary (defaults to opportunity name)'),
+      includeAllNotesFlag: z.boolean().optional().default(false),
+      includeAllDocumentsFlag: z.boolean().optional().default(false),
+      includeAllProductsFlag: z.boolean().optional().default(false),
+    },
+    async (params) =>
+      runTool('cw_convert_opportunity_to_ticket', async () => {
+        const { id, ...body } = params;
+        const response = await cwmPost<unknown>(`/sales/opportunities/${id}/convertToServiceTicket`, body);
+        return success(response.data);
       })
   );
 }

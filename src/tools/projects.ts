@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { cwmGet, cwmPost, cwmPatch } from '../client/cwmClient.js';
+import { cwmGet, cwmPost, cwmPatch, cwmDelete } from '../client/cwmClient.js';
 import { flatToJsonPatch } from '../client/jsonPatch.js';
 import { buildConditions, eq, contains } from '../client/conditions.js';
 import { ListParamsSchema, success } from '../schemas/common.js';
@@ -354,6 +354,168 @@ Example: projectId=42`,
       runTool('cw_list_project_documents', async () => {
         const response = await cwmGet<unknown[]>('/system/documents', { recordType: 'Project', recordId: projectId, page, pageSize });
         return success(response.data, { page, pageSize, count: response.data.length });
+      })
+  );
+
+  // ─── cw_get_project_ticket ─────────────────────────────────────────────────
+  server.tool(
+    'cw_get_project_ticket',
+    `Get full details of a single project ticket by its ticket ID.
+Calls GET /project/tickets/{id}.
+Example: id=789`,
+    {
+      id: z.number().int().positive().describe('Project ticket ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_get_project_ticket', async () => {
+        const response = await cwmGet<unknown>(`/project/tickets/${id}`);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_update_project_ticket ──────────────────────────────────────────────
+  server.tool(
+    'cw_update_project_ticket',
+    `Update a project ticket using JSON Patch.
+Calls PATCH /project/tickets/{id}.
+Example: { id: 789, changes: { summary: "New title", "status/name": "In Progress" } }`,
+    {
+      id: z.number().int().positive().describe('Project ticket ID'),
+      changes: z.record(z.unknown()).describe('Fields to update'),
+    },
+    async ({ id, changes }) =>
+      runTool('cw_update_project_ticket', async () => {
+        const patch = flatToJsonPatch(changes);
+        const response = await cwmPatch<unknown>(`/project/tickets/${id}`, patch);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_delete_project_ticket ──────────────────────────────────────────────
+  server.tool(
+    'cw_delete_project_ticket',
+    `Delete a project ticket permanently.
+Calls DELETE /project/tickets/{id}.
+Example: id=789`,
+    {
+      id: z.number().int().positive().describe('Project ticket ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_project_ticket', async () => {
+        await cwmDelete(`/project/tickets/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
+
+  // ─── cw_delete_project ─────────────────────────────────────────────────────
+  server.tool(
+    'cw_delete_project',
+    `Delete a project permanently.
+Calls DELETE /project/projects/{id}.
+Example: id=42`,
+    {
+      id: z.number().int().positive().describe('Project ID'),
+    },
+    async ({ id }) =>
+      runTool('cw_delete_project', async () => {
+        await cwmDelete(`/project/projects/${id}`);
+        return success({ deleted: true, id });
+      })
+  );
+
+  // ─── cw_delete_project_phase ───────────────────────────────────────────────
+  server.tool(
+    'cw_delete_project_phase',
+    `Delete a phase from a project permanently.
+Calls DELETE /project/projects/{parentId}/phases/{id}.
+Example: { projectId: 42, phaseId: 7 }`,
+    {
+      projectId: z.number().int().positive().describe('Project ID'),
+      phaseId: z.number().int().positive().describe('Phase ID'),
+    },
+    async ({ projectId, phaseId }) =>
+      runTool('cw_delete_project_phase', async () => {
+        await cwmDelete(`/project/projects/${projectId}/phases/${phaseId}`);
+        return success({ deleted: true, projectId, phaseId });
+      })
+  );
+
+  // ─── cw_add_project_team_member ────────────────────────────────────────────
+  server.tool(
+    'cw_add_project_team_member',
+    `Add a team member to a project. Required: member, projectRole.
+Calls POST /project/projects/{parentId}/teamMembers.
+Example: { projectId: 42, member: { identifier: "jsmith" }, projectRole: { id: 2 } }`,
+    {
+      projectId: z.number().int().positive().describe('Project ID'),
+      member: z.object({ id: z.number().optional(), identifier: z.string().optional() }).describe('Member reference'),
+      projectRole: z.object({ id: z.number().optional(), name: z.string().optional() }).describe('Project role reference'),
+      workRole: z.object({ id: z.number().optional(), name: z.string().optional() }).optional(),
+      hours: z.number().optional().describe('Allocated hours'),
+      startDate: z.string().optional().describe('ISO 8601 date'),
+      endDate: z.string().optional().describe('ISO 8601 date'),
+    },
+    async (params) =>
+      runTool('cw_add_project_team_member', async () => {
+        const { projectId, ...body } = params;
+        const response = await cwmPost<unknown>(`/project/projects/${projectId}/teamMembers`, body);
+        return success(response.data);
+      })
+  );
+
+  // ─── cw_remove_project_team_member ─────────────────────────────────────────
+  server.tool(
+    'cw_remove_project_team_member',
+    `Remove a team member from a project permanently.
+Calls DELETE /project/projects/{parentId}/teamMembers/{id}.
+Example: { projectId: 42, teamMemberId: 3 }`,
+    {
+      projectId: z.number().int().positive().describe('Project ID'),
+      teamMemberId: z.number().int().positive().describe('Team member record ID'),
+    },
+    async ({ projectId, teamMemberId }) =>
+      runTool('cw_remove_project_team_member', async () => {
+        await cwmDelete(`/project/projects/${projectId}/teamMembers/${teamMemberId}`);
+        return success({ deleted: true, projectId, teamMemberId });
+      })
+  );
+
+  // ─── cw_list_project_ticket_notes ──────────────────────────────────────────
+  server.tool(
+    'cw_list_project_ticket_notes',
+    `List notes on a project ticket.
+Calls GET /project/tickets/{parentId}/notes.
+Example: ticketId=789`,
+    {
+      ticketId: z.number().int().positive().describe('Project ticket ID'),
+      page: z.number().int().positive().optional().default(1),
+      pageSize: z.number().int().min(1).max(1000).optional().default(50),
+    },
+    async ({ ticketId, page, pageSize }) =>
+      runTool('cw_list_project_ticket_notes', async () => {
+        const response = await cwmGet<unknown[]>(`/project/tickets/${ticketId}/notes`, { page, pageSize });
+        return success(response.data, { page, pageSize, count: response.data.length });
+      })
+  );
+
+  // ─── cw_add_project_ticket_note ────────────────────────────────────────────
+  server.tool(
+    'cw_add_project_ticket_note',
+    `Add a note to a project ticket.
+Calls POST /project/tickets/{parentId}/notes.
+Example: { ticketId: 789, text: "Updated firewall config", detailDescriptionFlag: true }`,
+    {
+      ticketId: z.number().int().positive().describe('Project ticket ID'),
+      text: z.string().min(1).describe('Note text'),
+      detailDescriptionFlag: z.boolean().optional().default(false),
+      internalAnalysisFlag: z.boolean().optional().default(false),
+      resolutionFlag: z.boolean().optional().default(false),
+    },
+    async (params) =>
+      runTool('cw_add_project_ticket_note', async () => {
+        const { ticketId, ...body } = params;
+        const response = await cwmPost<unknown>(`/project/tickets/${ticketId}/notes`, body);
+        return success(response.data);
       })
   );
 }
