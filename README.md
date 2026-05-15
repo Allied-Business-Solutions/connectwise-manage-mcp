@@ -4,7 +4,7 @@ An MCP (Model Context Protocol) server that exposes the ConnectWise Manage PSA R
 
 ## Features
 
-- **82 tools** across 9 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements, Configurations, Opportunities, System
+- **120 tools** across 10 modules: Tickets, Projects, Time & Schedule, Companies, Contacts, Agreements & Finance, Configurations, Opportunities, Expenses, System
 - **4 raw escape-hatch tools** (opt-in via `CWM_ENABLE_RAW_TOOLS=true`) for power users
 - Production-grade auth with correct Basic + clientId header construction
 - JSON Patch (RFC 6902) for all updates — never accidentally blanks fields
@@ -105,9 +105,17 @@ Open `%APPDATA%\Claude\claude_desktop_config.json` and add the following (create
 
 Replace `YOUR_USERNAME` and fill in your credentials from the Prerequisites section above. Restart Claude Desktop after saving.
 
-### Updating (Manual Install)
+### Updating
 
-To pull the latest version:
+#### One-liner install (most users)
+
+Re-run the same install command — the installer handles everything:
+
+```powershell
+irm https://raw.githubusercontent.com/Allied-Business-Solutions/connectwise-manage-mcp/master/deploy/install.ps1 | iex
+```
+
+#### Manual install
 
 ```cmd
 cd %LOCALAPPDATA%\Programs\ConnectWiseMCP
@@ -116,7 +124,11 @@ npm install
 npm run build
 ```
 
-Then restart Claude Desktop.
+Then **restart Claude Desktop** after either method. Your credentials in `claude_desktop_config.json` are not touched by an update.
+
+#### Verifying the update worked
+
+After restarting Claude Desktop, ask Claude: *"Run cw_ping and tell me the server version."* The response should reflect the version you updated to.
 
 ## Team Installation (One-Liner)
 
@@ -213,7 +225,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 
 ## Tool Index
 
-### Service Desk — Tickets (21 tools)
+### Service Desk — Tickets (25 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_tickets` | List tickets with full filter/pagination support |
@@ -222,12 +234,16 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_count_tickets` | Count tickets matching a condition |
 | `cw_create_ticket` | Create a new service ticket |
 | `cw_update_ticket` | Update ticket fields via JSON Patch |
+| `cw_delete_ticket` | Delete a ticket permanently |
 | `cw_list_ticket_notes` | List notes on a ticket |
 | `cw_add_ticket_note` | Add a note to a ticket |
+| `cw_update_ticket_note` | Update an existing ticket note |
+| `cw_delete_ticket_note` | Delete a ticket note permanently |
 | `cw_list_ticket_tasks` | List checklist tasks on a ticket |
 | `cw_add_ticket_task` | Add a task to a ticket |
 | `cw_update_ticket_task` | Update a ticket task |
 | `cw_complete_ticket_task` | Mark a task as completed |
+| `cw_delete_ticket_task` | Delete a ticket task permanently |
 | `cw_list_ticket_time_entries` | List time entries on a ticket |
 | `cw_list_ticket_configurations` | List assets attached to a ticket |
 | `cw_list_ticket_documents` | List documents/attachments on a ticket |
@@ -238,27 +254,36 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_board_statuses` | List valid statuses for a board |
 | `cw_list_board_types` | List ticket types for a board |
 
-### Projects (16 tools)
+### Projects (25 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_projects` | List projects with filtering |
 | `cw_get_project` | Get full project detail |
 | `cw_create_project` | Create a project |
 | `cw_update_project` | Update project fields |
+| `cw_delete_project` | Delete a project permanently |
 | `cw_list_project_phases` | List phases for a project |
 | `cw_get_project_phase` | Get a single phase |
 | `cw_create_project_phase` | Create a project phase |
 | `cw_update_project_phase` | Update a phase |
-| `cw_list_project_tickets` | List tickets in a project |
+| `cw_delete_project_phase` | Delete a phase permanently |
+| `cw_list_project_tickets` | List tickets in a project (by project ID) |
+| `cw_get_project_ticket` | Get a single project ticket by its ticket ID |
 | `cw_create_project_ticket` | Create a ticket within a project |
+| `cw_update_project_ticket` | Update a project ticket via JSON Patch |
+| `cw_delete_project_ticket` | Delete a project ticket permanently |
+| `cw_list_project_ticket_notes` | List notes on a project ticket |
+| `cw_add_project_ticket_note` | Add a note to a project ticket |
 | `cw_list_project_workplan` | Get full phase+ticket workplan tree |
 | `cw_list_project_notes` | List project notes |
 | `cw_add_project_note` | Add a note to a project |
 | `cw_list_project_contacts` | List project contacts |
 | `cw_list_project_team_members` | List project team members |
+| `cw_add_project_team_member` | Add a team member to a project |
+| `cw_remove_project_team_member` | Remove a team member from a project |
 | `cw_list_project_documents` | List documents/attachments on a project |
 
-### Time & Schedule (9 tools)
+### Time & Schedule (12 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_time_entries` | List time entries with filters |
@@ -267,7 +292,10 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_update_time_entry` | Update a time entry |
 | `cw_delete_time_entry` | Delete a time entry |
 | `cw_list_schedule_entries` | List schedule/dispatch appointments |
+| `cw_get_schedule_entry` | Get a schedule entry by ID |
 | `cw_create_schedule_entry` | Create a schedule entry |
+| `cw_update_schedule_entry` | Update a schedule entry |
+| `cw_delete_schedule_entry` | Delete a schedule entry permanently |
 | `cw_list_members` | List active CWM members |
 | `cw_get_member` | Get a member by ID |
 
@@ -282,7 +310,7 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_list_company_notes` | List notes on a company |
 | `cw_add_company_note` | Add a note to a company |
 
-### Contacts (5 tools)
+### Contacts (7 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_contacts` | List contacts |
@@ -290,14 +318,22 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_search_contacts` | Search by company, name, email |
 | `cw_create_contact` | Create a contact |
 | `cw_update_contact` | Update a contact |
+| `cw_list_contact_notes` | List notes on a contact |
+| `cw_add_contact_note` | Add a note to a contact |
 
-### Agreements & Finance (6 tools)
+### Agreements & Finance (12 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_agreements` | List agreements |
 | `cw_get_agreement` | Get an agreement by ID |
-| `cw_list_agreement_additions` | List additions for an agreement |
-| `cw_update_agreement_addition` | Update an addition (incl. prorateFlag) |
+| `cw_create_agreement` | Create a new agreement |
+| `cw_update_agreement` | Update agreement fields |
+| `cw_delete_agreement` | Delete an agreement permanently |
+| `cw_list_agreement_additions` | List additions (line items) for an agreement |
+| `cw_get_agreement_addition` | Get a single addition by ID |
+| `cw_create_agreement_addition` | Add a product line item to an agreement |
+| `cw_update_agreement_addition` | Update an addition (incl. quantity, prorateFlag) |
+| `cw_delete_agreement_addition` | Remove a line item from an agreement |
 | `cw_list_invoices` | List invoices |
 | `cw_get_invoice` | Get an invoice by ID |
 
@@ -310,15 +346,33 @@ When auditing agreements, use `cw_list_agreements` with appropriate `typeName` f
 | `cw_update_configuration` | Update a configuration |
 | `cw_list_configuration_types` | List configuration types |
 
-### Opportunities (6 tools)
+### Opportunities (10 tools)
 | Tool | Description |
 |---|---|
 | `cw_list_opportunities` | List sales opportunities |
 | `cw_get_opportunity` | Get an opportunity by ID |
-| `cw_list_opportunity_notes` | List opportunity notes |
 | `cw_update_opportunity` | Update an opportunity |
+| `cw_delete_opportunity` | Delete an opportunity permanently |
+| `cw_list_opportunity_notes` | List opportunity notes |
+| `cw_add_opportunity_note` | Add a note to an opportunity |
+| `cw_convert_opportunity_to_project` | Convert an opportunity into a project |
+| `cw_convert_opportunity_to_ticket` | Convert an opportunity into a service ticket |
 | `cw_list_opportunity_documents` | List documents/attachments on an opportunity |
 | `cw_list_quote_documents` | List documents/attachments on a sales quote |
+
+### Expenses (10 tools)
+| Tool | Description |
+|---|---|
+| `cw_list_expense_entries` | List expense entries with filters |
+| `cw_get_expense_entry` | Get an expense entry by ID |
+| `cw_create_expense_entry` | Create an expense entry |
+| `cw_update_expense_entry` | Update an expense entry |
+| `cw_delete_expense_entry` | Delete an expense entry permanently |
+| `cw_list_expense_reports` | List expense reports |
+| `cw_get_expense_report` | Get an expense report by ID |
+| `cw_submit_expense_report` | Submit a report for approval |
+| `cw_approve_expense_report` | Approve an expense report |
+| `cw_reject_expense_report` | Reject an expense report |
 
 ### System / Reference (7 tools)
 | Tool | Description |
